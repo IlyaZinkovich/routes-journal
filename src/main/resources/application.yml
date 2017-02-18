@@ -1,0 +1,21 @@
+server:
+  port: 8884
+
+zeromq:
+  topic:
+    findRoutes:
+      envelope: FIND_ROUTES_TASK
+      address: tcp://*:5563
+      ioThreads: 1
+    saveRoutes:
+      envelope: SAVE_ROUTES_TASK
+      address: tcp://*:5564
+      ioThreads: 1
+
+redis:
+  host: localhost
+  port: 6379
+
+routes:
+  service:
+    url: http://localhost:8882
