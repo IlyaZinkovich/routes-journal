@@ -19,3 +19,8 @@ redis:
 routes:
   service:
     url: http://localhost:8882
+
+spring:
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false

@@ -34,4 +34,8 @@ public class UpdateInteractor {
         routeGateway.saveRoutes(routes);
         updateGateway.save(update);
     }
+
+    public boolean routesUpdated(LocalDate date, String city, String country) {
+        return exists(new Update(city, country, date, "Flickr"));
+    }
 }

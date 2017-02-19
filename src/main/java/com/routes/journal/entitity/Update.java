@@ -1,7 +1,10 @@
 package com.routes.journal.entitity;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
+
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.stream.Collectors.joining;
 
 public class Update {
 
@@ -23,7 +26,6 @@ public class Update {
 
     @Override
     public String toString() {
-        return city == null ? (city + ":") : "" + country + ":"
-                + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ":" + source;
+        return Stream.of(city, country, date.format(ofPattern("yyyy-MM-dd")), source).collect(joining(":"));
     }
 }

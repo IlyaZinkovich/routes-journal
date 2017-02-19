@@ -8,6 +8,8 @@ import com.routes.journal.interactor.UpdateInteractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +19,14 @@ import org.zeromq.ZMQ.Socket;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import static java.lang.Thread.currentThread;
+import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.joining;
+import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.FOUND;
+import static org.springframework.http.ResponseEntity.status;
 
 @Controller
 public class UpdateController {
@@ -41,10 +49,19 @@ public class UpdateController {
     private ObjectMapper objectMapper;
 
     @PostMapping(path = "/routes/{date}")
-    public void findRoutes(@PathVariable(name = "date") LocalDate date,
-                           @RequestParam(name = "destination") String destination) {
-        publisher.sendMore(findRoutesTaskEnvelope);
-        sendTask(new FindRoutesTask(date, destination));
+    public ResponseEntity<Object> findRoutes(@PathVariable(name = "date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+                                             @RequestParam(name = "city") String city,
+                                             @RequestParam(name = "country") String country) {
+        if (!updateInteractor.routesUpdated(date, city, country)) {
+            publisher.sendMore(findRoutesTaskEnvelope);
+            sendTask(new FindRoutesTask(date, getDestination(city, country)));
+            return status(ACCEPTED).build();
+        }
+        return status(FOUND).build();
+    }
+
+    private String getDestination(String city, String country) {
+        return Stream.of(city, country).filter(s -> !isNull(s)).collect(joining(","));
     }
 
     @PostConstruct
