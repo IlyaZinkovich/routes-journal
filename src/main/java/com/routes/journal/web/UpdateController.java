@@ -19,9 +19,11 @@ import org.zeromq.ZMQ.Socket;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static java.lang.Thread.currentThread;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static org.springframework.http.HttpStatus.ACCEPTED;
@@ -58,6 +60,17 @@ public class UpdateController {
             return status(ACCEPTED).build();
         }
         return status(FOUND).build();
+    }
+
+    @PostMapping(path = "/routes/{startDate}/{endDate}")
+    public ResponseEntity<Object> findRoutesForPeriod(
+            @PathVariable(name = "startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @PathVariable(name = "endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(name = "city") String city,
+            @RequestParam(name = "country") String country) {
+        long days = DAYS.between(startDate, endDate);
+        LongStream.range(0, days + 1).mapToObj(startDate::plusDays).forEach(day -> findRoutes(day, city, country));
+        return status(ACCEPTED).build();
     }
 
     private String getDestination(String city, String country) {
